@@ -1,0 +1,29 @@
+FROM --platform=$TARGETPLATFORM centos:8
+WORKDIR /root/
+
+RUN sed -i 's/mirrorlist/#mirrorlist/g' /etc/yum.repos.d/CentOS-*
+RUN sed -i 's|#baseurl=http://mirror.centos.org|baseurl=http://vault.centos.org|g' /etc/yum.repos.d/CentOS-*
+RUN yum makecache -y
+RUN yum install -y cmake3 openssl-devel libaio libaio-devel automake autoconf bison libtool ncurses-devel libgcrypt-devel libev-devel libcurl-devel zlib-devel vim-common readline-devel rpm-build
+RUN yum install -y  gcc gcc-c++ python36 wget bzip2 bzip2-devel bzip2-libs
+# 开发工具集合
+# RUN yum groupinstall 'Development Tools' -y
+# RUN dnf group install -y  "Development Tools"
+
+RUN yum install -y scl-utils scl-utils-build && yum -y install gcc-toolset-10-gcc gcc-toolset-10-gcc-c++
+RUN source /opt/rh/gcc-toolset-10/enable && source scl_source enable gcc-toolset-10
+# gcc-toolset-10-toolchain.aarch64
+
+
+
+RUN mkdir ~/.pip
+RUN cat > ~/.pip/pip.conf <<EOF
+[global]
+index-url = https://pypi.tuna.tsinghua.edu.cn/simple
+EOF
+
+RUN pip3 install sphinx
+COPY https://repo.percona.com/yum/release/8/SRPMS/percona-xtrabackup-80-8.0.26-18.1.generic.src.rpm /root/
+
+RUN rpm -ivh /root/percona-xtrabackup-80-8.0.26-18.1.generic.src.rpm
+RUN cd ~/rpmbuild && rpmbuild -bb --nodebuginfo SPECS/percona-xtrabackup.spec
