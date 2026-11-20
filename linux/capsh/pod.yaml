@@ -8,7 +8,7 @@ spec:
   - command:
     - sleep
     - 100m
-    image: registry.woqutech.com/cicd/alpine:cap
+    image: alpine:cap
     imagePullPolicy: Always
     name: mypod
     resources: {}
